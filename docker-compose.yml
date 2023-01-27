@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  loan-db:
+    image: mongo
+    restart: always
+    container_name: ms-loan-db
+    ports:
+      - "27019:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoadmin
+      MONGO_INITDB_ROOT_PASSWORD: secret
+      MONGO_INITDB_DATABASE: loans
+    volumes:
+      - ms-loan-db-data:/data/db
+volumes:
+  ms-loan-db-data:
