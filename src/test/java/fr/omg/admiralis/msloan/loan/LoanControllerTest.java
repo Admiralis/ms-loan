@@ -87,5 +87,4 @@ public class LoanControllerTest {
         mockMvc.perform(delete("/api/loans/1"))
                 .andExpect(status().isOk());
     }
-
 }
