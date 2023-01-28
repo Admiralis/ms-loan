@@ -10,4 +10,8 @@ public class LoanService {
     public List<Loan> findAll() {
         return new ArrayList<>();
     }
+
+    public Loan findById(String id) {
+        return null;
+    }
 }
