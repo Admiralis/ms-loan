@@ -25,11 +25,19 @@ public class LoanService {
     }
 
     public Loan save(Loan newLoan) {
-        return null;
+        return loanRepository.save(newLoan);
     }
 
-    public Loan update(String id, Loan newLoan) {
-        return null;
+    public Loan update(String id, Loan updateLoan) {
+        Loan loan = findById(id);
+        if (loan != null) {
+            loan.setStart(updateLoan.getStart());
+            loan.setEnd(updateLoan.getEnd());
+            loan.setDepositState(updateLoan.getDepositState());
+            loan.setLoanType(updateLoan.getLoanType());
+            loanRepository.save(loan);
+        }
+        return loan;
     }
 
     public void deleteById(String id) {
