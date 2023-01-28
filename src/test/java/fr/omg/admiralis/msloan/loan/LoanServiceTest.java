@@ -6,11 +6,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -44,6 +46,11 @@ public class LoanServiceTest {
     public void recupererUnEmprunt() {
         Loan loan = loanService.findById("1");
         assert loan.getId().equals("1");
+    }
+
+    @Test
+    public void recupererUnEmpruntInexistant() {
+        assertThrows(ResponseStatusException.class, () -> loanService.findById("3"));
     }
 
 }
