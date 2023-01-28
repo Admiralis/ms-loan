@@ -41,6 +41,6 @@ public class LoanService {
     }
 
     public void deleteById(String id) {
-
+        loanRepository.deleteById(id);
     }
 }

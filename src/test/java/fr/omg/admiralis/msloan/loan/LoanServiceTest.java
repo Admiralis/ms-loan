@@ -13,7 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 public class LoanServiceTest {
@@ -38,6 +40,7 @@ public class LoanServiceTest {
         when(loanRepository.findById("1")).thenReturn(java.util.Optional.of(loans.get(0)));
         when(loanRepository.findById("2")).thenReturn(java.util.Optional.of(loans.get(1)));
         when(loanRepository.save(newLoan)).thenAnswer(i -> i.getArguments()[0]);
+        doNothing().when(loanRepository).deleteById(anyString());
     }
 
     private void setUpValues() {
@@ -82,6 +85,13 @@ public class LoanServiceTest {
     @Test
     public void uneErreurEstLanceeLorsqueLEmpruntNexistePas() {
         assertThrows(ResponseStatusException.class, () -> loanService.update("3", newLoan));
+    }
+
+    @Test
+    public void LEmpruntEstSupprimeCorrectement() {
+        loanService = spy(loanService);
+        loanService.deleteById("1");
+        verify(loanService, times(1)).deleteById("1");
     }
 
 }
