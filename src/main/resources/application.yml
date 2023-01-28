@@ -1,0 +1,17 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://mongoadmin:secret@localhost:27019/loans?authSource=admin
+      database: loans
+springdoc:
+  swagger-ui:
+    path: /api-docs
+
+server:
+  port: 8082
+
+ms:
+  course:
+    url: http://localhost:8080/api/courses
+  computer:
+    url: http://localhost:8081/api/computers

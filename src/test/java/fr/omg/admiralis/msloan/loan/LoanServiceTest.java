@@ -1,5 +1,6 @@
 package fr.omg.admiralis.msloan.loan;
 
+import fr.omg.admiralis.msloan.course.CourseService;
 import fr.omg.admiralis.msloan.loan.dto.DepositState;
 import fr.omg.admiralis.msloan.loan.dto.LoanType;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +29,9 @@ public class LoanServiceTest {
     @MockBean
     private LoanRepository loanRepository;
 
+    @MockBean
+    private CourseService courseService;
+
     @BeforeEach
     public void setUp() {
         setUpValues();
@@ -35,7 +39,7 @@ public class LoanServiceTest {
     }
 
     private void setUpLoanRepositoryMock() {
-        loanService = new LoanService(loanRepository);
+        loanService = new LoanService(loanRepository, courseService);
         when(loanRepository.findAll()).thenReturn(loans);
         when(loanRepository.findById("1")).thenReturn(java.util.Optional.of(loans.get(0)));
         when(loanRepository.findById("2")).thenReturn(java.util.Optional.of(loans.get(1)));
