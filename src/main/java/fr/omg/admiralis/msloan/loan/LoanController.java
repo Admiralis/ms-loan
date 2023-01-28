@@ -24,4 +24,19 @@ public class LoanController {
     public Loan findById(@PathVariable String id) {
         return loanService.findById(id);
     }
+
+    @PostMapping
+    public Loan save(@RequestBody Loan newLoan) {
+        return loanService.save(newLoan);
+    }
+
+    @PutMapping("{id}")
+    public Loan update(@PathVariable String id, @RequestBody Loan newLoan) {
+        return loanService.update(id, newLoan);
+    }
+
+    @DeleteMapping("{id}")
+    public void deleteById(@PathVariable String id) {
+        loanService.deleteById(id);
+    }
 }

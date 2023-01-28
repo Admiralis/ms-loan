@@ -14,4 +14,16 @@ public class LoanService {
     public Loan findById(String id) {
         return null;
     }
+
+    public Loan save(Loan newLoan) {
+        return null;
+    }
+
+    public Loan update(String id, Loan newLoan) {
+        return null;
+    }
+
+    public void deleteById(String id) {
+
+    }
 }

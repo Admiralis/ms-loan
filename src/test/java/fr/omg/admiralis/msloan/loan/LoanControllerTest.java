@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -19,10 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -41,11 +41,14 @@ public class LoanControllerTest {
 
     @BeforeEach
     public void setUp() {
-        loans.add(new Loan("1", LocalDate.now(), LocalDate.now(), DepositState.PAID, LoanType.INDIVIDUAL));
-        loans.add(new Loan("1", LocalDate.now(), LocalDate.now(), DepositState.UNNECESSARY, LoanType.COLLECTIVE));
+        Loan loan1 = new Loan("1", LocalDate.now(), LocalDate.now(), DepositState.PAID, LoanType.INDIVIDUAL);
+        loans.add(loan1);
+        Loan loan2 = new Loan("2", LocalDate.now(), LocalDate.now(), DepositState.UNNECESSARY, LoanType.COLLECTIVE);
+        loans.add(loan2);
         when(loanService.findAll()).thenReturn(loans);
         when(loanService.findById("1")).thenReturn(loans.get(0));
         when(loanService.findById("2")).thenReturn(loans.get(1));
+        when(loanService.save(any(Loan.class))).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     @Test
@@ -55,10 +58,34 @@ public class LoanControllerTest {
                 .andExpect(jsonPath("$", hasSize(loans.size()))).andDo(print());
     }
 
-    @Test
-    public void jeRecupereLeBonPret() throws Exception {
-        mockMvc.perform(get("/api/loans/1"))
+    @ParameterizedTest
+    @ValueSource(strings = {"1", "2"})
+    public void jeRecupereLeBonPret(String id) throws Exception {
+        mockMvc.perform(get("/api/loans/" + id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value("1")).andDo(print());
+                .andExpect(jsonPath("$.id").value(id)).andDo(print());
     }
+
+    @Test
+    public void siJajouteUnPretIlEstBienAjoute() throws Exception {
+        mockMvc.perform(post("/api/loans")
+                .contentType("application/json")
+                .content("{\"startDate\":\"2020-01-01\",\"endDate\":\"2020-01-01\",\"depositState\":\"PAID\",\"loanType\":\"INDIVIDUAL\"}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void siJeModifieUnPretIlEstBienMisAJour() throws Exception {
+        mockMvc.perform(put("/api/loans/1")
+                .contentType("application/json")
+                .content("{\"startDate\":\"2020-01-01\",\"endDate\":\"2020-01-01\",\"depositState\":\"UNNECESSARY\",\"loanType\":\"COLLECTIVE\"}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void siJeSupprimeUnPretIlEstBienSupprime() throws Exception {
+        mockMvc.perform(delete("/api/loans/1"))
+                .andExpect(status().isOk());
+    }
+
 }
