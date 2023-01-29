@@ -41,9 +41,9 @@ public class LoanControllerTest {
 
     @BeforeEach
     public void setUp() {
-        Loan loan1 = new Loan("1", LocalDate.now(), LocalDate.now(), DepositState.PAID, LoanType.INDIVIDUAL);
+        Loan loan1 = new Loan("1", LocalDate.now(), LocalDate.now(), DepositState.PAID, LoanType.INDIVIDUAL, null);
         loans.add(loan1);
-        Loan loan2 = new Loan("2", LocalDate.now(), LocalDate.now(), DepositState.UNNECESSARY, LoanType.COLLECTIVE);
+        Loan loan2 = new Loan("2", LocalDate.now(), LocalDate.now(), DepositState.UNNECESSARY, LoanType.COLLECTIVE, null);
         loans.add(loan2);
         when(loanService.findAll()).thenReturn(loans);
         when(loanService.findById("1")).thenReturn(loans.get(0));
