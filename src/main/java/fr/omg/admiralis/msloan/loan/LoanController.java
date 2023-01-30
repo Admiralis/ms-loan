@@ -1,6 +1,5 @@
 package fr.omg.admiralis.msloan.loan;
 
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,7 +31,7 @@ public class LoanController {
 
     @PutMapping("{id}")
     public Loan update(@PathVariable String id, @RequestBody Loan newLoan) {
-        return loanService.update(id, newLoan);
+        return loanService.replace(id, newLoan);
     }
 
     @DeleteMapping("{id}")

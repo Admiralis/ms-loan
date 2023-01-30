@@ -1,5 +1,6 @@
 package fr.omg.admiralis.msloan.loan;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.omg.admiralis.msloan.course.CourseService;
 import fr.omg.admiralis.msloan.loan.dto.DepositState;
 import fr.omg.admiralis.msloan.loan.dto.LoanType;
@@ -14,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -32,6 +32,8 @@ public class LoanServiceTest {
     @MockBean
     private CourseService courseService;
 
+    private ObjectMapper objectMapper;
+
     @BeforeEach
     public void setUp() {
         setUpValues();
@@ -39,7 +41,7 @@ public class LoanServiceTest {
     }
 
     private void setUpLoanRepositoryMock() {
-        loanService = new LoanService(loanRepository, courseService);
+        loanService = new LoanService(loanRepository, courseService, objectMapper);
         when(loanRepository.findAll()).thenReturn(loans);
         when(loanRepository.findById("1")).thenReturn(java.util.Optional.of(loans.get(0)));
         when(loanRepository.findById("2")).thenReturn(java.util.Optional.of(loans.get(1)));
@@ -80,7 +82,7 @@ public class LoanServiceTest {
 
     @Test
     public void LEmpruntEstMisAJourCorrectement() {
-        Loan loan = loanService.update("1", newLoan);
+        Loan loan = loanService.replace("1", newLoan);
         assert loan.getId().equals("1");
         assert loan.getDepositState().equals(DepositState.UNNECESSARY);
         assert loan.getLoanType().equals(LoanType.COLLECTIVE);
@@ -88,7 +90,7 @@ public class LoanServiceTest {
 
     @Test
     public void uneErreurEstLanceeLorsqueLEmpruntNexistePas() {
-        assertThrows(ResponseStatusException.class, () -> loanService.update("3", newLoan));
+        assertThrows(ResponseStatusException.class, () -> loanService.replace("3", newLoan));
     }
 
     @Test
