@@ -52,6 +52,7 @@ public class LoanService {
     private Course findOrCreateCourse(Course course) {
         if (course.getId() != null) {
             try {
+
                 course = courseService.findById(course.getId());
             } catch (ResponseStatusException e) {
                 if (course.getLabel() != null) {
