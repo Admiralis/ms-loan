@@ -1,5 +1,6 @@
 package fr.omg.admiralis.msloan.loan;
 
+import fr.omg.admiralis.msloan.computer.Computer;
 import fr.omg.admiralis.msloan.course.Course;
 import fr.omg.admiralis.msloan.loan.dto.DepositState;
 import fr.omg.admiralis.msloan.loan.dto.LoanType;
@@ -25,4 +26,7 @@ public class Loan {
     DepositState depositState;
     LoanType loanType;
     Course course;
+
+    @NonNull
+    Computer computer;
 }
