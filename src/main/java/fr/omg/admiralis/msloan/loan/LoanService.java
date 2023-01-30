@@ -40,7 +40,6 @@ public class LoanService {
 
     /**
      * Peuple le contenu de l'objet course d'un prêt.
-     *
      * @param loan
      */
     private void populateCourse(Loan loan) {
