@@ -1,9 +1,7 @@
-package fr.omg.admiralis.msloan.loan;
+package fr.omg.admiralis.msloan.loan.model;
 
 import fr.omg.admiralis.msloan.computer.Computer;
 import fr.omg.admiralis.msloan.course.Course;
-import fr.omg.admiralis.msloan.loan.dto.DepositState;
-import fr.omg.admiralis.msloan.loan.dto.LoanType;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -25,8 +23,9 @@ public class Loan {
     LocalDate endDate;
     DepositState depositState;
     LoanType loanType;
-    Course course;
 
+    LoanStatus loanStatus;
+    Course course;
     @NonNull
     Computer computer;
 }

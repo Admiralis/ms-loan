@@ -1,9 +1,11 @@
 package fr.omg.admiralis.msloan.loan;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.omg.admiralis.msloan.computer.ComputerService;
 import fr.omg.admiralis.msloan.course.CourseService;
-import fr.omg.admiralis.msloan.loan.dto.DepositState;
-import fr.omg.admiralis.msloan.loan.dto.LoanType;
+import fr.omg.admiralis.msloan.loan.model.DepositState;
+import fr.omg.admiralis.msloan.loan.model.LoanType;
+import fr.omg.admiralis.msloan.loan.model.Loan;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,6 +34,9 @@ public class LoanServiceTest {
     @MockBean
     private CourseService courseService;
 
+    @MockBean
+    private ComputerService computerService;
+
     private ObjectMapper objectMapper;
 
     @BeforeEach
@@ -41,7 +46,7 @@ public class LoanServiceTest {
     }
 
     private void setUpLoanRepositoryMock() {
-        loanService = new LoanService(loanRepository, courseService, objectMapper);
+        loanService = new LoanService(loanRepository, courseService, objectMapper, computerService);
         when(loanRepository.findAll()).thenReturn(loans);
         when(loanRepository.findById("1")).thenReturn(java.util.Optional.of(loans.get(0)));
         when(loanRepository.findById("2")).thenReturn(java.util.Optional.of(loans.get(1)));
@@ -50,11 +55,11 @@ public class LoanServiceTest {
     }
 
     private void setUpValues() {
-        Loan loan1 = new Loan("1", LocalDate.now(), LocalDate.now(), DepositState.PAID, LoanType.INDIVIDUAL, null);
-        Loan loan2 = new Loan("2", LocalDate.now(), LocalDate.now(), DepositState.PAID, LoanType.INDIVIDUAL, null);
+        Loan loan1 = new Loan("1", LocalDate.now(), LocalDate.now(), DepositState.PAID, LoanType.INDIVIDUAL, null, null);
+        Loan loan2 = new Loan("2", LocalDate.now(), LocalDate.now(), DepositState.PAID, LoanType.INDIVIDUAL, null, null);
         loans.add(loan1);
         loans.add(loan2);
-        newLoan = new Loan("3", LocalDate.now(), LocalDate.now(), DepositState.UNNECESSARY, LoanType.COLLECTIVE, null);
+        newLoan = new Loan("3", LocalDate.now(), LocalDate.now(), DepositState.UNNECESSARY, LoanType.COLLECTIVE, null, null);
     }
 
     @Test

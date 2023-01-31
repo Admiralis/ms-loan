@@ -1,8 +1,12 @@
 package fr.omg.admiralis.msloan.loan;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.omg.admiralis.msloan.computer.Computer;
+import fr.omg.admiralis.msloan.computer.ComputerService;
 import fr.omg.admiralis.msloan.course.Course;
 import fr.omg.admiralis.msloan.course.CourseService;
+import fr.omg.admiralis.msloan.loan.model.Loan;
+import fr.omg.admiralis.msloan.loan.model.LoanStatus;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -14,17 +18,19 @@ public class LoanService {
 
     private final LoanRepository loanRepository;
     private final CourseService courseService;
+    private final ComputerService computerService;
 
 
-
-    public LoanService(LoanRepository loanRepository, CourseService courseService, ObjectMapper objectMapper) {
+    public LoanService(LoanRepository loanRepository, CourseService courseService, ObjectMapper objectMapper, ComputerService computerService) {
         this.loanRepository = loanRepository;
         this.courseService = courseService;
+        this.computerService = computerService;
     }
 
     public List<Loan> findAll() {
         List<Loan> loans = loanRepository.findAll();
         loans.forEach(this::populateCourse);
+        loans.forEach(this::populateComputer);
         return loans;
     }
 
@@ -33,6 +39,7 @@ public class LoanService {
         if (loan.getCourse() != null) {
             populateCourse(loan);
         }
+        populateComputer(loan);
         return loan;
     }
 
@@ -50,14 +57,36 @@ public class LoanService {
         loan.setCourse(course);
     }
 
-    public Loan save(Loan newLoan) {
-        if (newLoan.getCourse() != null) {
-            newLoan.setCourse(courseService.findOrCreateCourse(newLoan.getCourse()));
-            loanRepository.save(newLoan);
-            populateCourse(newLoan);
-            return newLoan;
+    /**
+     * Peuple le contenu de l'objet course d'un prêt.
+     * @param loan
+     */
+    private void populateComputer(Loan loan) {
+        Computer computer;
+        try {
+            computer = computerService.findById(loan.getComputer().getId());
+            loan.setComputer(computer);
+        } catch (ResponseStatusException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Computer not found");
         }
-        return loanRepository.save(newLoan);
+    }
+
+    public Loan save(Loan newLoan) {
+        Course course;
+        try {
+            computerService.findById(newLoan.getComputer().getId());
+        } catch (ResponseStatusException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Computer not found");
+        }
+        if (newLoan.getCourse() != null) {
+            course = courseService.findOrCreateCourse(newLoan.getCourse());
+            newLoan.setCourse(course);
+        }
+        if (newLoan.getLoanStatus() == null) {
+            newLoan.setLoanStatus(LoanStatus.IN_PROGRESS);
+        }
+        loanRepository.save(newLoan);
+        return findById(newLoan.getId());
     }
 
     public Loan replace(String id, Loan updateLoan) {
@@ -68,6 +97,29 @@ public class LoanService {
             loan.setDepositState(updateLoan.getDepositState());
             loan.setLoanType(updateLoan.getLoanType());
             loan.setCourse(courseService.findOrCreateCourse(updateLoan.getCourse()));
+            loan.setComputer(computerService.findById(updateLoan.getComputer().getId()));
+            loanRepository.save(loan);
+        }
+        return loan;
+    }
+
+    public Loan update(String id, Loan updateLoan) {
+        Loan loan = findById(id);
+        if (loan != null) {
+            loan.setStartDate(updateLoan.getStartDate());
+            if (updateLoan.getEndDate() != null) {
+                loan.setEndDate(updateLoan.getEndDate());
+            }
+            if (updateLoan.getDepositState() != null) {
+                loan.setDepositState(updateLoan.getDepositState());
+            }
+            if (updateLoan.getLoanType() != null) {
+                loan.setLoanType(updateLoan.getLoanType());
+            }
+            if (updateLoan.getCourse() != null) {
+                loan.setCourse(courseService.findOrCreateCourse(updateLoan.getCourse()));
+            }
+            loan.setComputer(computerService.findById(updateLoan.getComputer().getId()));
             loanRepository.save(loan);
         }
         return loan;

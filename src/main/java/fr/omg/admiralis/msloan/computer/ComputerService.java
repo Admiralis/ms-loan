@@ -1,6 +1,9 @@
 package fr.omg.admiralis.msloan.computer;
 
+import fr.omg.admiralis.msloan.course.Course;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -28,4 +31,5 @@ public class ComputerService {
     public void deleteById(String id) {
         computerRestRepository.deleteById(id);
     }
+
 }

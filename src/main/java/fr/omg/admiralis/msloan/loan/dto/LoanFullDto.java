@@ -1,5 +1,7 @@
 package fr.omg.admiralis.msloan.loan.dto;
 
+import fr.omg.admiralis.msloan.loan.model.DepositState;
+import fr.omg.admiralis.msloan.loan.model.LoanType;
 import lombok.Data;
 
 import java.time.LocalDate;

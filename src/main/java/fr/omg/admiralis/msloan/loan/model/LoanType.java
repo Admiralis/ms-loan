@@ -1,4 +1,4 @@
-package fr.omg.admiralis.msloan.loan.dto;
+package fr.omg.admiralis.msloan.loan.model;
 
 public enum LoanType {
     INDIVIDUAL,
