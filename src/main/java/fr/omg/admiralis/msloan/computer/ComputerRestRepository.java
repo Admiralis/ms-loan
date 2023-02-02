@@ -36,4 +36,12 @@ public class ComputerRestRepository {
     public void deleteById(String id) {
         restTemplate.delete(computerUrl + "/" + id);
     }
+
+    public Computer update(Computer updateComputer) {
+        return restTemplate.patchForObject(computerUrl + "/" + updateComputer.getId(), updateComputer, Computer.class);
+    }
+
+    public Computer findBySerialNumber(String serialNumber) {
+        return restTemplate.getForObject(computerUrl + "/search?serialNumber=" + serialNumber, Computer.class);
+    }
 }

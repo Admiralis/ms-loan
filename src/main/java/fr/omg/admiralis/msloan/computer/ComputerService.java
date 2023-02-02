@@ -32,4 +32,28 @@ public class ComputerService {
         computerRestRepository.deleteById(id);
     }
 
+    public Computer update(Computer updateComputer) {
+        Computer computer = computerRestRepository.findById(updateComputer.getId());
+        if (computerRestRepository.findById(updateComputer.getId()) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Computer not found");
+        }
+        return computerRestRepository.update(computer);
+    }
+
+    public Computer replace(Computer replaceComputer) {
+        Computer computer = computerRestRepository.findById(replaceComputer.getId());
+
+        if (computerRestRepository.findById(replaceComputer.getId()) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Computer not found");
+        }
+
+        computer.setProcessor(replaceComputer.getProcessor());
+        computer.setRam(replaceComputer.getRam());
+        computer.setCondition(replaceComputer.getCondition());
+        computer.setComputerStatus(replaceComputer.getComputerStatus());
+        computer.setComments(replaceComputer.getComments());
+
+        return computerRestRepository.save(computer);
+    }
+
 }

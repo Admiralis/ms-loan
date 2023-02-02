@@ -3,6 +3,7 @@ package fr.omg.admiralis.msloan.loan;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.omg.admiralis.msloan.computer.Computer;
 import fr.omg.admiralis.msloan.computer.ComputerService;
+import fr.omg.admiralis.msloan.computer.ComputerStatus;
 import fr.omg.admiralis.msloan.course.Course;
 import fr.omg.admiralis.msloan.course.CourseService;
 import fr.omg.admiralis.msloan.loan.model.Loan;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -74,7 +76,9 @@ public class LoanService {
     public Loan save(Loan newLoan) {
         Course course;
         try {
-            computerService.findById(newLoan.getComputer().getId());
+            Computer computer = computerService.findById(newLoan.getComputer().getId());
+            computer.setComputerStatus(ComputerStatus.IN_USE);
+            computerService.replace(computer);
         } catch (ResponseStatusException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Computer not found");
         }
@@ -125,7 +129,18 @@ public class LoanService {
         return loan;
     }
 
-    public void deleteById(String id) {
-        loanRepository.deleteById(id);
+    public Loan deleteById(String id) {
+        Loan loan = findById(id);
+        if (loan != null) {
+            Computer computer = computerService.findById(loan.getComputer().getId());
+            computer.setComputerStatus(ComputerStatus.AVAILABLE);
+            computerService.replace(computer);
+            loan.setLoanStatus(LoanStatus.FINISHED);
+            loan.setEndDate(LocalDate.now());
+            loanRepository.save(loan);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan not found");
+        }
+        return findById(id);
     }
 }

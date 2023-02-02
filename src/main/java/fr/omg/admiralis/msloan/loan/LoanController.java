@@ -41,7 +41,7 @@ public class LoanController {
     }
 
     @DeleteMapping("{id}")
-    public void deleteById(@PathVariable String id) {
-        loanService.deleteById(id);
+    public Loan deleteById(@PathVariable String id) {
+        return loanService.deleteById(id);
     }
 }

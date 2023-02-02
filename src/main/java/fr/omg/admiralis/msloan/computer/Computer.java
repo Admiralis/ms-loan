@@ -25,6 +25,9 @@ public class Computer {
     private String ram;
     @Transient
     private String condition;
+
+    @Transient
+    private ComputerStatus computerStatus;
     @DBRef
     @Transient
     private List<Comment> comments;
