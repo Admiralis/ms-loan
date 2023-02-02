@@ -2,6 +2,7 @@ package fr.omg.admiralis.msloan.loan.model;
 
 import fr.omg.admiralis.msloan.computer.Computer;
 import fr.omg.admiralis.msloan.course.Course;
+import fr.omg.admiralis.msloan.student.Student;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -28,4 +29,6 @@ public class Loan {
     Course course;
     @NonNull
     Computer computer;
+
+    Student student;
 }

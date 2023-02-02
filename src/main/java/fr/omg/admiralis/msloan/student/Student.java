@@ -1,30 +1,28 @@
-package fr.omg.admiralis.msloan.course;
+package fr.omg.admiralis.msloan.student;
 
+import fr.omg.admiralis.msloan.course.Course;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDate;
-
-@Document(collection = "courses")
+@Document(collection = "students")
 @Getter
 @Setter
+@AllArgsConstructor
 @ToString
-@NoArgsConstructor
-public class Course {
+public class Student {
+
     @Id
     private String id;
-    @Transient
-    private String label;
 
     @Transient
-    private LocalDate startDate;
-
+    private String firstName;
     @Transient
-    private LocalDate endDate;
+    private String lastName;
 
+    private Course course;
 }

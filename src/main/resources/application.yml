@@ -20,5 +20,7 @@ server:
 ms:
   course:
     url: http://localhost:8080/api/courses
+  student:
+    url: http://localhost:8080/api/students
   computer:
     url: http://localhost:8081/api/computers
