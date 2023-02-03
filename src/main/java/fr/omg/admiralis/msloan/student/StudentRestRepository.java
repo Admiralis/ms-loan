@@ -11,6 +11,7 @@ public class StudentRestRepository {
 
     public StudentRestRepository(RestTemplate restTemplate, @Value("${ms.student.url}") String studentUrl) {
         this.restTemplate = restTemplate;
+        this.studentUrl = studentUrl;
     }
 
     public Student save(Student student) {

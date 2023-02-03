@@ -1,13 +1,17 @@
 package fr.omg.admiralis.msloan.loan;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.omg.admiralis.msloan.computer.Computer;
 import fr.omg.admiralis.msloan.computer.ComputerService;
 import fr.omg.admiralis.msloan.course.CourseService;
 import fr.omg.admiralis.msloan.loan.model.DepositState;
+import fr.omg.admiralis.msloan.loan.model.LoanStatus;
 import fr.omg.admiralis.msloan.loan.model.LoanType;
 import fr.omg.admiralis.msloan.loan.model.Loan;
+import fr.omg.admiralis.msloan.student.StudentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.web.server.ResponseStatusException;
@@ -37,7 +41,12 @@ public class LoanServiceTest {
     @MockBean
     private ComputerService computerService;
 
-    private ObjectMapper objectMapper;
+    @MockBean
+    private StudentService studentService;
+
+    @Mock
+    private Computer computer;
+
 
     @BeforeEach
     public void setUp() {
@@ -46,7 +55,7 @@ public class LoanServiceTest {
     }
 
     private void setUpLoanRepositoryMock() {
-        loanService = new LoanService(loanRepository, courseService, objectMapper, computerService);
+        loanService = new LoanService(loanRepository, courseService, computerService, studentService);
         when(loanRepository.findAll()).thenReturn(loans);
         when(loanRepository.findById("1")).thenReturn(java.util.Optional.of(loans.get(0)));
         when(loanRepository.findById("2")).thenReturn(java.util.Optional.of(loans.get(1)));
@@ -55,11 +64,11 @@ public class LoanServiceTest {
     }
 
     private void setUpValues() {
-        Loan loan1 = new Loan("1", LocalDate.now(), LocalDate.now(), DepositState.PAID, LoanType.INDIVIDUAL, null, null);
-        Loan loan2 = new Loan("2", LocalDate.now(), LocalDate.now(), DepositState.PAID, LoanType.INDIVIDUAL, null, null);
+        Loan loan1 = new Loan("1", LocalDate.now(), LocalDate.now(), DepositState.PAID, LoanType.INDIVIDUAL, LoanStatus.IN_PROGRESS, null, computer, null);
+        Loan loan2 = new Loan("2", LocalDate.now(), LocalDate.now(), DepositState.PAID, LoanType.INDIVIDUAL,LoanStatus.IN_PROGRESS, null, computer, null);
         loans.add(loan1);
         loans.add(loan2);
-        newLoan = new Loan("3", LocalDate.now(), LocalDate.now(), DepositState.UNNECESSARY, LoanType.COLLECTIVE, null, null);
+        newLoan = new Loan("3", LocalDate.now(), LocalDate.now(), DepositState.UNNECESSARY, LoanType.COLLECTIVE, LoanStatus.IN_PROGRESS,null, computer, null);
     }
 
     @Test

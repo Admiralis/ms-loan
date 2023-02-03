@@ -19,7 +19,6 @@ public class Loan {
     @Id
     String id;
 
-    @NonNull
     LocalDate startDate;
     LocalDate endDate;
     DepositState depositState;
@@ -27,7 +26,7 @@ public class Loan {
 
     LoanStatus loanStatus;
     Course course;
-    @NonNull
+
     Computer computer;
 
     Student student;

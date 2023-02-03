@@ -1,5 +1,7 @@
 package fr.omg.admiralis.msloan.student;
 
+import fr.omg.admiralis.msloan.course.Course;
+import fr.omg.admiralis.msloan.course.CourseService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -8,8 +10,11 @@ import org.springframework.web.server.ResponseStatusException;
 public class StudentService {
     private final StudentRestRepository studentRestRepository;
 
-    public StudentService(StudentRestRepository studentRestRepository) {
+    private final CourseService courseService;
+
+    public StudentService(StudentRestRepository studentRestRepository, CourseService courseService) {
         this.studentRestRepository = studentRestRepository;
+        this.courseService = courseService;
     }
 
     public Student findById(String id) {
@@ -34,18 +39,15 @@ public class StudentService {
 
     public Student findOrCreateStudent(Student student) {
         if (student.getId() != null) {
-            try {
                 student = findById(student.getId());
-            } catch (Exception e) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
-            }
-        } else if (student.getFirstName() != null && student.getLastName() != null) {
+        } else if (student.getFirstName() != null || student.getLastName() != null) {
             try {
                 student = save(student);
             } catch (Exception e) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "L'élève doit avoir un nom et un prénom");
             }
         }
+
         return student;
     }
 }
