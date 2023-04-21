@@ -103,6 +103,8 @@ public class LoanService {
                 Computer computer = computerService.findById(newLoan.getComputer().getId());
                 computer.setComputerStatus(ComputerStatus.IN_USE);
                 computerService.replace(computer);
+                System.out.println(computerService.findById(newLoan.getComputer().getId()));
+                newLoan.setComputer(computer);
             } catch (ResponseStatusException e) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ordinateur non trouvé");
             }
@@ -129,6 +131,11 @@ public class LoanService {
             newLoan.setStartDate(LocalDate.now());
         }
 
+        loanRepository.findByComputerId(newLoan.getComputer().getId()).forEach(loan -> {
+            if (loan.getLoanStatus() == LoanStatus.IN_PROGRESS) {
+                loanRepository.delete(loan);
+            }
+        });
         loanRepository.save(newLoan);
         return findById(newLoan.getId());
     }

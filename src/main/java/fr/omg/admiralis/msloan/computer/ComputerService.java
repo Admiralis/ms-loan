@@ -53,7 +53,7 @@ public class ComputerService {
         computer.setComputerStatus(replaceComputer.getComputerStatus());
         computer.setComments(replaceComputer.getComments());
 
-        return computerRestRepository.save(computer);
+        return computerRestRepository.update(computer);
     }
 
 }

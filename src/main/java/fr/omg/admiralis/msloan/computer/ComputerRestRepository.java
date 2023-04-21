@@ -5,7 +5,6 @@ package fr.omg.admiralis.msloan.computer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -38,7 +37,8 @@ public class ComputerRestRepository {
     }
 
     public Computer update(Computer updateComputer) {
-        return restTemplate.patchForObject(computerUrl + "/" + updateComputer.getId(), updateComputer, Computer.class);
+//        return restTemplate.patchForObject(computerUrl + "/" + updateComputer.getId(), updateComputer, Computer.class);
+        return restTemplate.postForObject(computerUrl + "/" + updateComputer.getId() + "?method=patch", updateComputer, Computer.class);
     }
 
     public Computer findBySerialNumber(String serialNumber) {
