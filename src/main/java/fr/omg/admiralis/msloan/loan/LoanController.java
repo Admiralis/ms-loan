@@ -44,4 +44,31 @@ public class LoanController {
     public Loan deleteById(@PathVariable String id) {
         return loanService.deleteById(id);
     }
+
+    @GetMapping("/student/{studentId}")
+    public List<Loan> findByStudentId(@PathVariable String studentId) {
+        return loanService.findByStudentId(studentId);
+    }
+
+    @GetMapping("/course/{courseId}")
+    public List<Loan> findByCourseId(@PathVariable String courseId) {
+        return loanService.findByCourseId(courseId);
+    }
+
+    @GetMapping("/computer/{computerId}")
+    public List<Loan> findByComputerId(@PathVariable String computerId) {
+        return loanService.findByComputerId(computerId);
+    }
+
+    @GetMapping("/course/{courseId}/in-progress")
+    public Loan findByCourseIdAndLoanStatus(@PathVariable String courseId) {
+        return loanService.findByCourseIdAndInProgressStatus(courseId);
+    }
+
+    @GetMapping("/computer/{computerId}/in-progress")
+    public Loan findByComputerIdAndLoanStatus(@PathVariable String computerId) {
+        return loanService.findByComputerIdAndInProgressStatus(computerId);
+    }
+
+
 }

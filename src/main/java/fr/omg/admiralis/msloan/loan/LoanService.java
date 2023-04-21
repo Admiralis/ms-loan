@@ -175,7 +175,7 @@ public class LoanService {
             Computer computer = computerService.findById(loan.getComputer().getId());
             computer.setComputerStatus(ComputerStatus.AVAILABLE);
             computerService.replace(computer);
-            if (loan.getEndDate().isAfter(LocalDate.now())) {
+            if (loan.getEndDate() != null && loan.getEndDate().isAfter(LocalDate.now())) {
                 loan.setLoanStatus(LoanStatus.CANCELED);
             } else {
                 loan.setLoanStatus(LoanStatus.FINISHED);
@@ -187,4 +187,42 @@ public class LoanService {
         }
         return findById(id);
     }
+
+    public List<Loan> findByStudentId(String id) {
+        List<Loan> loans = loanRepository.findByStudentId(id);
+        loans.forEach(this::populateCourse);
+        loans.forEach(this::populateComputer);
+        return loans;
+    }
+
+    public List<Loan> findByComputerId(String id) {
+        List<Loan> loans = loanRepository.findByComputerId(id);
+        loans.forEach(this::populateCourse);
+        loans.forEach(this::populateComputer);
+        return loans;
+    }
+
+    public List<Loan> findByCourseId(String id) {
+        List<Loan> loans = loanRepository.findByCourseId(id);
+        loans.forEach(this::populateCourse);
+        loans.forEach(this::populateComputer);
+        return loans;
+    }
+
+    public Loan findByComputerIdAndInProgressStatus(String id) {
+        List<Loan> loans = loanRepository.findByComputerIdAndLoanStatus(id, LoanStatus.IN_PROGRESS);
+        loans.forEach(this::populateCourse);
+        loans.forEach(this::populateComputer);
+        return loans.stream().findFirst().orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+    public Loan findByCourseIdAndInProgressStatus(String id) {
+        List<Loan> loans = loanRepository.findByCourseIdAndLoanStatus(id, LoanStatus.IN_PROGRESS);
+        loans.forEach(this::populateCourse);
+        loans.forEach(this::populateComputer);
+        return loans.stream().findFirst().orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+
+
 }
