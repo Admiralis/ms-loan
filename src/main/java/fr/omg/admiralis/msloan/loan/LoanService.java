@@ -220,16 +220,14 @@ public class LoanService {
         List<Loan> loans = loanRepository.findByComputerIdAndLoanStatus(id, LoanStatus.IN_PROGRESS);
         loans.forEach(this::populateCourse);
         loans.forEach(this::populateComputer);
-        return loans.stream().findFirst().orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        return loans.stream().findFirst().orElseThrow(() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Aucun prêt en cours pour ce PC"));
     }
 
     public Loan findByCourseIdAndInProgressStatus(String id) {
         List<Loan> loans = loanRepository.findByCourseIdAndLoanStatus(id, LoanStatus.IN_PROGRESS);
         loans.forEach(this::populateCourse);
         loans.forEach(this::populateComputer);
-        return loans.stream().findFirst().orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        return loans.stream().findFirst().orElseThrow(() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Aucun prêt en cours pour ce cours"));
     }
-
-
 
 }
