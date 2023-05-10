@@ -1,11 +1,21 @@
 package fr.omg.admiralis.msloan.loan;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.omg.admiralis.msloan.computer.Computer;
+import fr.omg.admiralis.msloan.computer.ComputerService;
+import fr.omg.admiralis.msloan.computer.ComputerStatus;
 import fr.omg.admiralis.msloan.course.Course;
 import fr.omg.admiralis.msloan.course.CourseService;
+import fr.omg.admiralis.msloan.loan.model.Loan;
+import fr.omg.admiralis.msloan.loan.model.LoanStatus;
+import fr.omg.admiralis.msloan.loan.model.LoanType;
+import fr.omg.admiralis.msloan.student.Student;
+import fr.omg.admiralis.msloan.student.StudentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -13,14 +23,24 @@ public class LoanService {
 
     private final LoanRepository loanRepository;
     private final CourseService courseService;
+    private final ComputerService computerService;
 
-    public LoanService(LoanRepository loanRepository, CourseService courseService) {
+    private final StudentService studentService;
+
+
+    public LoanService(LoanRepository loanRepository, CourseService courseService, ComputerService computerService, StudentService studentService) {
         this.loanRepository = loanRepository;
         this.courseService = courseService;
+        this.computerService = computerService;
+        this.studentService = studentService;
     }
 
     public List<Loan> findAll() {
-        return loanRepository.findAll();
+        List<Loan> loans = loanRepository.findAll();
+        loans.forEach(this::populateCourse);
+        loans.forEach(this::populateComputer);
+        loans.forEach(this::populateStudent);
+        return loans;
     }
 
     public Loan findById(String id) {
@@ -28,11 +48,38 @@ public class LoanService {
         if (loan.getCourse() != null) {
             populateCourse(loan);
         }
+        if (loan.getStudent() != null) {
+            populateStudent(loan);
+        }
+        populateComputer(loan);
         return loan;
     }
 
+    private void populateStudent(Loan loan) {
+        Student student;
+
+        if (loan.getStudent() == null) {
+            return;
+        }
+
+        try {
+            student = studentService.findById(loan.getStudent().getId());
+        } catch (ResponseStatusException e) {
+            student = null;
+        }
+        loan.setStudent(student);
+    }
+
+    /**
+     * Peuple le contenu de l'objet course d'un prêt.
+     *
+     * @param loan
+     */
     private void populateCourse(Loan loan) {
         Course course;
+        if (loan.getCourse() == null) {
+            return;
+        }
         try {
             course = courseService.findById(loan.getCourse().getId());
         } catch (ResponseStatusException e) {
@@ -41,42 +88,163 @@ public class LoanService {
         loan.setCourse(course);
     }
 
-    public Loan save(Loan newLoan) {
-        loanRepository.save(newLoan);
-        if (newLoan.getCourse() != null) {
-            newLoan.setCourse(findOrCreateCourse(newLoan.getCourse()));
+    /**
+     * Peuple le contenu de l'objet course d'un prêt.
+     *
+     * @param loan
+     */
+    private void populateComputer(Loan loan) {
+        Computer computer;
+        try {
+            computer = computerService.findById(loan.getComputer().getId());
+            loan.setComputer(computer);
+        } catch (ResponseStatusException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Computer not found");
         }
-        return newLoan;
     }
 
-    private Course findOrCreateCourse(Course course) {
-        if (course.getId() != null) {
+    public Loan save(Loan newLoan) {
+        Course course;
+        Student student;
+
+        findByComputerId(newLoan.getComputer().getId()).forEach(loan -> {
+            if (loan.getLoanStatus() == LoanStatus.IN_PROGRESS) {
+                deleteById(loan.getId());
+            }
+        });
+
+        newLoan.setLoanStatus(LoanStatus.IN_PROGRESS);
+
+        if (newLoan.getComputer() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le prêt doit contenir un ordinateur");
+        } else {
             try {
-                course = courseService.findById(course.getId());
+                Computer computer = computerService.findById(newLoan.getComputer().getId());
+                computer.setComputerStatus(ComputerStatus.IN_USE);
+                computerService.replace(computer);
+                newLoan.setComputer(computer);
             } catch (ResponseStatusException e) {
-                if (course.getLabel() != null) {
-                    return courseService.save(course);
-                } else {
-                    course = null;
-                }
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ordinateur non trouvé");
             }
         }
-        return course;
+        if (newLoan.getCourse() != null) {
+            course = courseService.findOrCreateCourse(newLoan.getCourse());
+            newLoan.setCourse(course);
+        }
+
+        if (newLoan.getCourse() == null && newLoan.getStudent() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le cours doit contenir un étudiant ou un cours");
+        }
+
+        if (newLoan.getStudent() != null) {
+            newLoan.setLoanType(LoanType.INDIVIDUAL);
+            student = newLoan.getStudent();
+            student.setCourse(newLoan.getCourse());
+            student = studentService.findOrCreateStudent(newLoan.getStudent());
+            newLoan.setStudent(student);
+        }
+
+        if (newLoan.getStartDate() == null) {
+            newLoan.setStartDate(LocalDate.now());
+        }
+
+        loanRepository.save(newLoan);
+        return findById(newLoan.getId());
     }
 
-    public Loan update(String id, Loan updateLoan) {
+    public Loan replace(String id, Loan updateLoan) {
         Loan loan = findById(id);
         if (loan != null) {
-            loan.setStart(updateLoan.getStart());
-            loan.setEnd(updateLoan.getEnd());
+            loan.setStartDate(updateLoan.getStartDate());
+            loan.setEndDate(updateLoan.getEndDate());
             loan.setDepositState(updateLoan.getDepositState());
             loan.setLoanType(updateLoan.getLoanType());
+            loan.setCourse(courseService.findOrCreateCourse(updateLoan.getCourse()));
+            loan.setComputer(computerService.findById(updateLoan.getComputer().getId()));
             loanRepository.save(loan);
         }
         return loan;
     }
 
-    public void deleteById(String id) {
-        loanRepository.deleteById(id);
+    public Loan update(String id, Loan updateLoan) {
+        Loan loan = findById(id);
+        if (loan != null) {
+            loan.setStartDate(updateLoan.getStartDate());
+            if (updateLoan.getEndDate() != null) {
+                loan.setEndDate(updateLoan.getEndDate());
+            }
+            if (updateLoan.getDepositState() != null) {
+                loan.setDepositState(updateLoan.getDepositState());
+            }
+            if (updateLoan.getLoanType() != null) {
+                loan.setLoanType(updateLoan.getLoanType());
+            }
+            if (updateLoan.getCourse() != null) {
+                loan.setCourse(courseService.findOrCreateCourse(updateLoan.getCourse()));
+            }
+            loan.setComputer(computerService.findById(updateLoan.getComputer().getId()));
+            loanRepository.save(loan);
+        }
+        return loan;
     }
+
+    public Loan deleteById(String id) {
+        Loan loan = findById(id);
+        if (loan != null) {
+            Computer computer = computerService.findById(loan.getComputer().getId());
+            computer.setComputerStatus(ComputerStatus.AVAILABLE);
+            computerService.replace(computer);
+            if (loan.getEndDate() != null && loan.getEndDate().isAfter(LocalDate.now())) {
+                loan.setLoanStatus(LoanStatus.CANCELED);
+            } else {
+                loan.setLoanStatus(LoanStatus.FINISHED);
+            }
+            loan.setEndDate(LocalDate.now());
+            loanRepository.save(loan);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Prêt non trouvé");
+        }
+        return findById(id);
+    }
+
+    public List<Loan> findByStudentId(String id) {
+        List<Loan> loans = loanRepository.findByStudentId(id);
+        loans.forEach(this::populateCourse);
+        loans.forEach(this::populateComputer);
+        loans.forEach(this::populateStudent);
+        return loans;
+    }
+
+    public List<Loan> findByComputerId(String id) {
+        List<Loan> loans = loanRepository.findByComputerId(id);
+        loans.forEach(this::populateCourse);
+        loans.forEach(this::populateComputer);
+        loans.forEach(this::populateStudent);
+        return loans;
+    }
+
+    public List<Loan> findByCourseId(String id) {
+        List<Loan> loans = loanRepository.findByCourseId(id);
+        loans.forEach(this::populateCourse);
+        loans.forEach(this::populateComputer);
+        loans.forEach(this::populateStudent);
+        return loans;
+    }
+
+    public Loan findByComputerIdAndInProgressStatus(String id) {
+        List<Loan> loans = loanRepository.findByComputerIdAndLoanStatus(id, LoanStatus.IN_PROGRESS);
+        loans.forEach(this::populateCourse);
+        loans.forEach(this::populateComputer);
+        loans.forEach(this::populateStudent);
+        return loans.stream().findFirst().orElseThrow(() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Aucun prêt en cours pour ce PC"));
+    }
+
+    public Loan findByCourseIdAndInProgressStatus(String id) {
+        List<Loan> loans = loanRepository.findByCourseIdAndLoanStatus(id, LoanStatus.IN_PROGRESS);
+        loans.forEach(this::populateCourse);
+        loans.forEach(this::populateComputer);
+        loans.forEach(this::populateStudent);
+        return loans.stream().findFirst().orElseThrow(() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Aucun prêt en cours pour ce cours"));
+    }
+
 }

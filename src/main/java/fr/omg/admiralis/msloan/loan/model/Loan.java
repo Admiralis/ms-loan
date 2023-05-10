@@ -1,13 +1,11 @@
-package fr.omg.admiralis.msloan.loan;
+package fr.omg.admiralis.msloan.loan.model;
 
+import fr.omg.admiralis.msloan.computer.Computer;
 import fr.omg.admiralis.msloan.course.Course;
-import fr.omg.admiralis.msloan.loan.dto.DepositState;
-import fr.omg.admiralis.msloan.loan.dto.LoanType;
+import fr.omg.admiralis.msloan.student.Student;
 import lombok.*;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import java.time.LocalDate;
 
@@ -20,9 +18,16 @@ import java.time.LocalDate;
 public class Loan {
     @Id
     String id;
-    LocalDate start;
-    LocalDate end;
+
+    LocalDate startDate;
+    LocalDate endDate;
     DepositState depositState;
     LoanType loanType;
+
+    LoanStatus loanStatus;
     Course course;
+
+    Computer computer;
+
+    Student student;
 }
