@@ -7,7 +7,7 @@ COPY pom.xml .
 COPY src src
 COPY docker/application.yml src/main/resources/application.yml
 
-RUN ./mvnw install -DskipTests
+RUN ./mvnw install -Dmaven.test.skip=true
 RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
 
 FROM eclipse-temurin:17-jdk-alpine
