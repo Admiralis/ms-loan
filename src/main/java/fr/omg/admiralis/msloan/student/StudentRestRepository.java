@@ -15,8 +15,7 @@ public class StudentRestRepository {
     }
 
     public Student save(Student student) {
-        restTemplate.postForObject(studentUrl, student, Student.class);
-        return student;
+        return restTemplate.postForObject(studentUrl, student, Student.class);
     }
 
     public Student findById(String id) {

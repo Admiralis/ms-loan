@@ -8,6 +8,7 @@ import fr.omg.admiralis.msloan.course.Course;
 import fr.omg.admiralis.msloan.course.CourseService;
 import fr.omg.admiralis.msloan.loan.model.Loan;
 import fr.omg.admiralis.msloan.loan.model.LoanStatus;
+import fr.omg.admiralis.msloan.loan.model.LoanType;
 import fr.omg.admiralis.msloan.student.Student;
 import fr.omg.admiralis.msloan.student.StudentService;
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,7 @@ public class LoanService {
         List<Loan> loans = loanRepository.findAll();
         loans.forEach(this::populateCourse);
         loans.forEach(this::populateComputer);
+        loans.forEach(this::populateStudent);
         return loans;
     }
 
@@ -55,6 +57,11 @@ public class LoanService {
 
     private void populateStudent(Loan loan) {
         Student student;
+
+        if (loan.getStudent() == null) {
+            return;
+        }
+
         try {
             student = studentService.findById(loan.getStudent().getId());
         } catch (ResponseStatusException e) {
@@ -70,6 +77,9 @@ public class LoanService {
      */
     private void populateCourse(Loan loan) {
         Course course;
+        if (loan.getCourse() == null) {
+            return;
+        }
         try {
             course = courseService.findById(loan.getCourse().getId());
         } catch (ResponseStatusException e) {
@@ -96,6 +106,15 @@ public class LoanService {
     public Loan save(Loan newLoan) {
         Course course;
         Student student;
+
+        findByComputerId(newLoan.getComputer().getId()).forEach(loan -> {
+            if (loan.getLoanStatus() == LoanStatus.IN_PROGRESS) {
+                deleteById(loan.getId());
+            }
+        });
+
+        newLoan.setLoanStatus(LoanStatus.IN_PROGRESS);
+
         if (newLoan.getComputer() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le prêt doit contenir un ordinateur");
         } else {
@@ -103,7 +122,6 @@ public class LoanService {
                 Computer computer = computerService.findById(newLoan.getComputer().getId());
                 computer.setComputerStatus(ComputerStatus.IN_USE);
                 computerService.replace(computer);
-                System.out.println(computerService.findById(newLoan.getComputer().getId()));
                 newLoan.setComputer(computer);
             } catch (ResponseStatusException e) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ordinateur non trouvé");
@@ -113,16 +131,15 @@ public class LoanService {
             course = courseService.findOrCreateCourse(newLoan.getCourse());
             newLoan.setCourse(course);
         }
-        if (newLoan.getLoanStatus() == null) {
-            newLoan.setLoanStatus(LoanStatus.IN_PROGRESS);
-        }
 
         if (newLoan.getCourse() == null && newLoan.getStudent() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le cours doit contenir un étudiant ou un cours");
         }
 
         if (newLoan.getStudent() != null) {
-            newLoan.setCourse(null);
+            newLoan.setLoanType(LoanType.INDIVIDUAL);
+            student = newLoan.getStudent();
+            student.setCourse(newLoan.getCourse());
             student = studentService.findOrCreateStudent(newLoan.getStudent());
             newLoan.setStudent(student);
         }
@@ -131,11 +148,6 @@ public class LoanService {
             newLoan.setStartDate(LocalDate.now());
         }
 
-        loanRepository.findByComputerId(newLoan.getComputer().getId()).forEach(loan -> {
-            if (loan.getLoanStatus() == LoanStatus.IN_PROGRESS) {
-                loanRepository.delete(loan);
-            }
-        });
         loanRepository.save(newLoan);
         return findById(newLoan.getId());
     }
@@ -199,6 +211,7 @@ public class LoanService {
         List<Loan> loans = loanRepository.findByStudentId(id);
         loans.forEach(this::populateCourse);
         loans.forEach(this::populateComputer);
+        loans.forEach(this::populateStudent);
         return loans;
     }
 
@@ -206,6 +219,7 @@ public class LoanService {
         List<Loan> loans = loanRepository.findByComputerId(id);
         loans.forEach(this::populateCourse);
         loans.forEach(this::populateComputer);
+        loans.forEach(this::populateStudent);
         return loans;
     }
 
@@ -213,6 +227,7 @@ public class LoanService {
         List<Loan> loans = loanRepository.findByCourseId(id);
         loans.forEach(this::populateCourse);
         loans.forEach(this::populateComputer);
+        loans.forEach(this::populateStudent);
         return loans;
     }
 
@@ -220,6 +235,7 @@ public class LoanService {
         List<Loan> loans = loanRepository.findByComputerIdAndLoanStatus(id, LoanStatus.IN_PROGRESS);
         loans.forEach(this::populateCourse);
         loans.forEach(this::populateComputer);
+        loans.forEach(this::populateStudent);
         return loans.stream().findFirst().orElseThrow(() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Aucun prêt en cours pour ce PC"));
     }
 
@@ -227,6 +243,7 @@ public class LoanService {
         List<Loan> loans = loanRepository.findByCourseIdAndLoanStatus(id, LoanStatus.IN_PROGRESS);
         loans.forEach(this::populateCourse);
         loans.forEach(this::populateComputer);
+        loans.forEach(this::populateStudent);
         return loans.stream().findFirst().orElseThrow(() -> new ResponseStatusException(HttpStatus.NO_CONTENT, "Aucun prêt en cours pour ce cours"));
     }
 

@@ -39,15 +39,20 @@ public class StudentService {
 
     public Student findOrCreateStudent(Student student) {
         if (student.getId() != null) {
+            try {
                 student = findById(student.getId());
-        } else if (student.getFirstName() != null || student.getLastName() != null) {
+            } catch (ResponseStatusException e) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "L'élève n'existe pas");
+            }
+        } else if (student.getFirstName() != null && student.getLastName() != null) {
             try {
                 student = save(student);
-            } catch (Exception e) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "L'élève doit avoir un nom et un prénom");
+            } catch (ResponseStatusException e) {
+                student = null;
             }
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "L'élève doit avoir un nom et un prénom");
         }
-
         return student;
     }
 }
