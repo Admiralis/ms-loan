@@ -7,6 +7,8 @@ COPY pom.xml .
 COPY src src
 COPY docker/application.yml src/main/resources/application.yml
 
+RUN chmod +x mvnw
+
 RUN ./mvnw install -Dmaven.test.skip=true
 RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
 
