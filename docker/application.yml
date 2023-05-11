@@ -19,8 +19,8 @@ server:
 
 ms:
   course:
-    url: http://ms-courses:8080/api/courses
+    url: http://ms-course:8080/api/courses
   student:
-    url: http://ms-courses:8080/api/students
+    url: http://ms-course:8080/api/students
   computer:
-    url: http://ms-computers:8081/api/computers
+    url: http://ms-computer:8081/api/computers
