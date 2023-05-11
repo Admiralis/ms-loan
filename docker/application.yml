@@ -15,12 +15,12 @@ springdoc:
     path: /api-docs
 
 server:
-  port: 8082
+  port: 80
 
 ms:
   course:
-    url: http://ms-course:8080/api/courses
+    url: http://ms-course/api/courses
   student:
-    url: http://ms-course:8080/api/students
+    url: http://ms-course/api/students
   computer:
-    url: http://ms-computer:8081/api/computers
+    url: http://ms-computer/api/computers
