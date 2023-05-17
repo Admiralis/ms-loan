@@ -7,6 +7,7 @@ Micro service pour gérer les emprunts individuels ou collectifs.
 - Spring Boot
 - Spring Data MongoDB
 - Spring Web
+- Actuator
 - Lombak
 - Docker
 
@@ -24,7 +25,16 @@ Micro service pour gérer les emprunts individuels ou collectifs.
 
 ## API
 
-### Swagger
+### Documentation
 
-Le swagger est disponible à l'adresse suivante :
-- http://localhost:8082/api-docs
+#### StandAlone :
+
+- Swagger : `http://localhost:8081/api/loans/docs`
+- Health : `http://localhost:8081/api/loans/status/health`
+
+##### Avec Gateway :
+
+Si vous utilisez la gateway, que ce soit en mode [dev](https://github.com/Admiralis/dev_stack) ou en mode [prod](https://github.com/Admiralis/admiralis), l'API sera accessible sur le port 80.Si l'API est sur un autre serveur, remplacer `localhost` par l'adresse du serveur.
+
+- Swagger : `http://localhost/api/loans/docs`
+- Health : `http://localhost/api/loans/status/health`
