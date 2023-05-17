@@ -12,7 +12,9 @@ spring:
         port: 35731
 springdoc:
   swagger-ui:
-    path: /api-docs
+    path: /api/loans/docs
+  api-docs:
+    path: /api/loans/docs
 
 server:
   port: 80
@@ -24,3 +26,13 @@ ms:
     url: http://ms-course/api/students
   computer:
     url: http://ms-computer/api/computers
+
+management:
+  endpoints:
+    jmx:
+      exposure:
+        include: 'health,info'
+    web:
+      base-path: '/api/loans/status'
+      path-mapping:
+        health: /health
